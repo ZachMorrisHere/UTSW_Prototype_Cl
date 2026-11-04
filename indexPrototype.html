@@ -49,7 +49,7 @@ mark{background:var(--mk);color:inherit;border-radius:3px;padding:0 2px}
 .rl{display:flex;flex-wrap:wrap;gap:8px;margin:0 16px 24px}.rl .b2{margin:0}
 /* reader */
 .seg{display:flex;gap:4px;margin:4px 16px 12px;background:var(--card);border-radius:999px;padding:4px;box-shadow:0 1px 6px rgba(15,39,64,.12)}
-.seg button{flex:1;border-radius:999px;padding:9px 4px;font-size:12.5px;font-weight:700;color:var(--mut);line-height:1.2;min-height:44px}.seg button.on{background:var(--acc);color:var(--on)}.seg button .n{display:block;font-size:11px;font-weight:600;opacity:.85}
+.seg button{flex:1;min-width:0;border-radius:999px;padding:9px 4px;font-size:12.5px;font-weight:700;color:var(--mut);line-height:1.2;min-height:44px}.seg button.on{background:var(--acc);color:var(--on)}.seg button .n{display:block;font-size:11px;font-weight:600;opacity:.85}
 .card{margin:0 16px 12px;background:var(--card);border-radius:20px;padding:16px;box-shadow:0 3px 12px rgba(15,39,64,.1)}
 .card h2{margin:0 0 10px;font-size:18px}
 .kp{list-style:none;margin:0;padding:0;display:grid;gap:10px}.kp li{display:flex;gap:10px;font-size:15.5px;line-height:1.5}.kp li::before{content:"✓";flex:none;width:24px;height:24px;border-radius:50%;background:var(--acc);color:var(--on);display:grid;place-items:center;font-size:13px;font-weight:800;margin-top:1px}
@@ -83,7 +83,7 @@ const dk=(m,l)=>m.id+'.'+l,isDone=(m,l)=>!!S.done[dk(m,l)];
 const modDone=m=>[1,2,3].filter(l=>isDone(m,l)).length;
 const stDone=s=>s.mods.reduce((a,m)=>a+modDone(m),0),stPct=s=>Math.round(100*stDone(s)/(3*s.mods.length));
 const mins=w=>Math.max(1,Math.round(w/200));
-const LV=[{n:1,name:'The basics',short:'Basics'},{n:2,name:'Learn more',short:'Learn more'},{n:3,name:'Full details',short:'Full details'}];
+const LV=[{n:1,name:'The basics',short:'Basics',sub:'The short version'},{n:2,name:'Learn more',short:'Learn more',sub:'What to expect'},{n:3,name:'Full details',short:'Full details',sub:'Everything, step by step'}];
 const lvInfo=(m,l)=>l==1?`Key points at a glance · about ${mins(m.w1)} min`:l==2?`Plain-language explanations · about ${mins(m.w2)} min`:`Step-by-step screens with pictures · ${m.t3.length} screens`;
 const chunk=p=>{const s=p.split(/(?<=[.!?])\s+/),out=[];let cur=[],w=0;s.forEach(x=>{const n=x.split(/\s+/).length;if(w&&w+n>48){out.push(cur.join(' '));cur=[];w=0}cur.push(x);w+=n});if(cur.length)out.push(cur.join(' '));return out};
 const link=t=>esc(t).replace(/https?:\/\/[^\s<]+/g,u=>{const s=u.replace(/^https?:\/\/(www\.)?/,'');return `<a href="${u}" target="_blank" rel="noopener noreferrer">${s.length>44?s.slice(0,43)+'…':s}</a>`});
@@ -114,12 +114,8 @@ function results(){const T=terms(S.q),r=search(S.q);return head('Results','home'
  (r.length?r.map(x=>`<div class="res"><small>${ST[x.m.si].icon} STAGE ${ST[x.m.si].id} · ${esc(ST[x.m.si].name)}</small><h3>${esc(x.m.title)}</h3><p>${excerpt(x,T)}</p><button class="b1" data-a="module" data-s="${x.m.si}" data-m="${x.m.mi}">Open topic</button><button class="b2" data-a="read" data-s="${x.m.si}" data-m="${x.m.mi}" data-lv="${x.lv}" data-i="${x.lv==3?x.si:0}">Go to this part</button></div>`).join(''):`<div class="empty">No matches for “${esc(S.q)}”.<br>Try fewer or simpler words.</div>`)}
 function stageV(){const s=ST[S.si];return `<div class="mh" style="background:${s.color}"><button class="back" data-a="back" data-to="home" aria-label="Back to journey">←</button><h1>${s.icon} ${esc(s.name)}</h1><div class="sub">Stage ${s.id} of 4 · ${s.mods.length} topics · ${stDone(s)} of ${3*s.mods.length} sections done<br>${esc(s.desc)}</div></div><div style="height:14px"></div>`+
  s.mods.map((m,i)=>`<button class="lr" data-a="module" data-s="${S.si}" data-m="${i}"><span class="ic" aria-hidden="true">${m.icon}</span><span class="tx"><b>${esc(m.title)}</b><small>${esc(m.blurb)}</small><span class="dots" aria-label="${modDone(m)} of 3 sections done">${[1,2,3].map(l=>`<i class="${isDone(m,l)?'on':''}"></i>`).join('')}</span></span><span class="chev" aria-hidden="true">›</span></button>`).join('')+'<div style="height:12px"></div>'}
-function modV(){const s=ST[S.si],m=s.mods[S.mi];return `<div class="mh" style="background:${s.color}"><button class="back" data-a="back" data-to="stage" aria-label="Back to stage">←</button><h1>${m.icon} ${esc(m.title)}</h1><div class="sub">Stage ${s.id} · ${esc(s.name)}<br>${esc(m.blurb)}</div></div>
-<div class="hd">Choose how much detail you want</div>`+
- LV.map(l=>`<button class="lv ${isDone(m,l.n)?'dn':''}" data-a="read" data-s="${S.si}" data-m="${S.mi}" data-lv="${l.n}" data-i="0"><span class="bd" style="background:${s.color}" aria-hidden="true">${l.n}</span><span class="tx"><b>${l.name}</b><small>${lvInfo(m,l.n)}</small></span><span class="ck" aria-label="${isDone(m,l.n)?'Completed':'Not completed'}">${isDone(m,l.n)?'✓':'›'}</span></button>`).join('')+
- (m.rel&&m.rel.length?`<div class="hd">Related topics</div><div class="rl">${m.rel.map(id=>{const r=byId(id);return `<button class="b2" data-a="module" data-s="${r.si}" data-m="${r.mi}">${esc(r.title)}</button>`}).join('')}</div>`:'<div style="height:16px"></div>')}
 function readV(){const s=ST[S.si],m=s.mods[S.mi],l=S.lv;
- const seg=`<div class="seg" role="tablist" aria-label="Level of detail">${LV.map(x=>`<button role="tab" aria-selected="${x.n==l}" class="${x.n==l?'on':''}" data-a="lvl" data-lv="${x.n}">${x.short}<span class="n">${isDone(m,x.n)?'✓ done':'Level '+x.n}</span></button>`).join('')}</div>`;
+ const seg=`<div class="seg" role="tablist" aria-label="Level of detail">${LV.map(x=>`<button role="tab" aria-selected="${x.n==l}" class="${x.n==l?'on':''}" data-a="lvl" data-lv="${x.n}">${x.short}<span class="n">${isDone(m,x.n)?'✓ ':''}${x.sub}</span></button>`).join('')}</div>`;
  let body='',nav='';
  if(l==1){body=`<div class="card"><h2>The basics</h2><ul class="kp">${m.t1.points.map(p=>`<li>${esc(p)}</li>`).join('')}</ul></div>`+(m.t1.alert?`<div class="al" role="note"><b>⚠️ Important</b>${esc(m.t1.alert)}</div>`:'');
   nav=`<div class="nav"><button class="b1" data-a="more">Want more detail? Learn more →</button></div>`}
@@ -129,9 +125,11 @@ function readV(){const s=ST[S.si],m=s.mods[S.mi],l=S.lv;
   body=`<div class="pgl"><div class="pg"><i style="width:${Math.round(100*(k+1)/n)}%"></i></div><small>Screen ${k+1} of ${n}</small></div>
 <div class="sl">${sl.g?`<div class="gl">${esc(sl.g)}</div>`:''}${sl.i!=null?`<img alt="" src="${D.imgs[sl.i]}">`:''}<h2>${esc(sl.t)}${prev?'<span class="cont">continued</span>':''}</h2>${sl.b?`<p>${link(sl.b)}</p>`:''}</div>`;
   nav=`<div class="nav"><button class="b2" data-a="prev" ${k?'':'disabled style="opacity:.4"'}>← Back</button><button class="b1" data-a="next">${last?'Finish ✓':'Next →'}</button></div>`}
- return head(m.title,'module')+seg+body+nav}
+ const hdr=`<div class="mh" style="background:${s.color}"><button class="back" data-a="back" data-to="stage" aria-label="Back to stage">←</button><h1>${m.icon} ${esc(m.title)}</h1><div class="sub">Stage ${s.id} · Topic ${S.mi+1} of ${s.mods.length}<br>${esc(m.blurb)}</div></div><div style="height:12px"></div>`;
+ const rel=m.rel&&m.rel.length?`<div class="hd">Related topics</div><div class="rl">${m.rel.map(id=>{const r=byId(id);return `<button class="b2" data-a="module" data-s="${r.si}" data-m="${r.mi}">${esc(r.title)}</button>`}).join('')}</div>`:'';
+ return hdr+seg+body+nav+rel+'<div style="height:12px"></div>'}
 function tasksV(){return `<h2 class="pt">Task tracker</h2>`+S.tasks.map((t,i)=>`<label class="task ${t.d?'d':''}"><input type="checkbox" data-a="tk" data-i="${i}" ${t.d?'checked':''}><span>${esc(t.t)}</span></label>`).join('')+`<div class="add"><input id="nt" aria-label="New task" placeholder="Add a task"><button class="b1" data-a="addt" style="margin:0">Add</button></div>`}
-function render(keep){const V={home,results,stage:stageV,module:modV,read:readV,tasks:tasksV}[S.v];const mn=document.getElementById('main'),y=keep?mn.scrollTop:0;mn.innerHTML=V();mn.scrollTop=y;
+function render(keep){const V={home,results,stage:stageV,read:readV,tasks:tasksV}[S.v];const mn=document.getElementById('main'),y=keep?mn.scrollTop:0;mn.innerHTML=V();mn.scrollTop=y;
   document.getElementById('tabs').innerHTML=[['home','🏠','Home'],['tasks','✅','Tasks']].map(([t,i,n])=>`<button data-a="tab" data-t="${t}" class="${S.tab==t?'on':''}" ${S.tab==t?'aria-current="page"':''}><span aria-hidden="true">${i}</span>${n}</button>`).join('');bind()}
 function bind(){const q=document.getElementById('q');if(!q)return;q.oninput=()=>{S.q=q.value;const sg=document.getElementById('sg');if(!sg)return;const T=terms(q.value);const L=T.length?SUG.concat(IDX.filter(x=>x.t&&T.every(w=>hit(w,x.tl))).map(x=>x.t)).filter((s,i,a)=>T.every(w=>hit(w,s.toLowerCase()))&&a.indexOf(s)==i).slice(0,4):[];sg.innerHTML=L.length?`<div class="sug">${L.map(s=>`<button data-a="sug" data-q="${esc(s)}">🔍 ${esc(s)}</button>`).join('')}</div>`:''};q.onkeydown=e=>{if(e.key=='Enter')go()}}
 const go=()=>{S.q=(document.getElementById('q')||{}).value||S.q;if(S.q.trim()){S.v='results';render()}};
@@ -139,13 +137,13 @@ const mark=l=>{const m=ST[S.si].mods[S.mi];S.done[dk(m,l)]=1;persist()};
 document.addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;const a=b.dataset.a,d=b.dataset;
   if(a=='go')go();else if(a=='sug'){S.q=d.q;S.v='results';render()}
   else if(a=='stage'){S.si=+d.s;S.v='stage';render()}
-  else if(a=='module'){S.si=+d.s;S.mi=+d.m;S.v='module';render()}
+  else if(a=='module'){S.si=+d.s;S.mi=+d.m;S.lv=1;S.i=0;S.v='read';render()}
   else if(a=='read'){S.si=+d.s;S.mi=+d.m;S.lv=+d.lv;S.i=+(d.i||0);S.v='read';render()}
   else if(a=='lvl'){S.lv=+d.lv;S.i=0;render()}
   else if(a=='more'){mark(S.lv);S.lv++;S.i=0;render()}
   else if(a=='back'){const t=d.to;if(t=='home'){S.v='home';S.tab='home'}else S.v=t;render()}
   else if(a=='prev'){S.i--;render()}
-  else if(a=='next'){const n=ST[S.si].mods[S.mi].t3.length;if(S.i<n-1)S.i++;else{mark(3);S.v='module'}render()}
+  else if(a=='next'){const n=ST[S.si].mods[S.mi].t3.length;if(S.i<n-1)S.i++;else{mark(3);S.v='stage'}render()}
   else if(a=='tab'){S.tab=d.t;S.v=d.t;render()}
   else if(a=='tk'){S.tasks[+d.i].d=b.checked?1:0;persist();render(1)}
   else if(a=='addt'){const i=document.getElementById('nt');if(i.value.trim()){S.tasks.push({t:i.value.trim(),d:0});persist();render()}}});
